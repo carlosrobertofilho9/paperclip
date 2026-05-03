@@ -708,7 +708,7 @@ export function CompanyImport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Org Chart", href: "/org" },
+      { label: "Research Team", href: "/org" },
       { label: "Import" },
     ]);
   }, [setBreadcrumbs]);

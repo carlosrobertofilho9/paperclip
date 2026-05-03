@@ -81,7 +81,7 @@ export function CompanyInvites() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: selectedCompany?.name ?? "Article", href: "/dashboard" },
       { label: "Settings", href: "/company/settings" },
       { label: "Invites" },
     ]);

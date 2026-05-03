@@ -426,9 +426,9 @@ function IssueSearchInput({
             e.currentTarget.blur();
           }
         }}
-        placeholder="Search issues..."
+        placeholder="Search tasks..."
         className="pl-7 text-xs sm:text-sm"
-        aria-label="Search issues"
+        aria-label="Search tasks"
         data-page-search-target="true"
       />
     </div>
@@ -504,11 +504,11 @@ function SubIssueProgressSummaryStrip({
               </Link>
             </>
           ) : summary.totalCount === 0 ? (
-            <div className="text-sm font-medium text-foreground">No active sub-issues</div>
+            <div className="text-sm font-medium text-foreground">No active sub-tasks</div>
           ) : summary.doneCount === summary.totalCount ? (
-            <div className="text-sm font-medium text-foreground">All sub-issues done</div>
+            <div className="text-sm font-medium text-foreground">All sub-tasks done</div>
           ) : (
-            <div className="text-sm font-medium text-foreground">No actionable sub-issues</div>
+            <div className="text-sm font-medium text-foreground">No actionable sub-tasks</div>
           )}
         </div>
       </div>
@@ -1139,8 +1139,8 @@ export function IssuesList({
     return defaults;
   }, [baseCreateIssueDefaults, currentUserId, issueById, projectId, viewState.groupBy]);
 
-  const createActionLabel = createIssueLabel ? `Create ${createIssueLabel}` : "Create Issue";
-  const createButtonLabel = createIssueLabel ? `New ${createIssueLabel}` : "New Issue";
+  const createActionLabel = createIssueLabel ? `Create ${createIssueLabel}` : "Create Task";
+  const createButtonLabel = createIssueLabel ? `New ${createIssueLabel}` : "New Task";
   const openCreateIssueDialog = useCallback((groupKey?: string) => {
     openNewIssue(newIssueDefaults(groupKey));
   }, [newIssueDefaults, openNewIssue]);
@@ -1230,7 +1230,7 @@ export function IssuesList({
             visibleColumnSet={visibleIssueColumnSet}
             onToggleColumn={toggleIssueColumn}
             onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-            title="Choose which issue columns stay visible"
+            title="Choose which task columns stay visible"
             iconOnly
           />
 
@@ -1307,7 +1307,7 @@ export function IssuesList({
                     ["priority", "Priority"],
                     ["assignee", "Assignee"],
                     ["workspace", "Workspace"],
-                    ["parent", "Parent Issue"],
+                    ["parent", "Parent Task"],
                     ["none", "None"],
                   ] as const).map(([value, label]) => (
                     <button
@@ -1337,13 +1337,13 @@ export function IssuesList({
       )}
       {boardColumnLimitReached && (
         <p className="text-xs text-muted-foreground">
-          Some board columns are showing up to {ISSUE_BOARD_COLUMN_RESULT_LIMIT} issues. Refine filters or search to reveal the rest.
+          Some board columns are showing up to {ISSUE_BOARD_COLUMN_RESULT_LIMIT} tasks. Refine filters or search to reveal the rest.
         </p>
       )}
       {!isLoading && filtered.length === 0 && viewState.viewMode === "list" && (
         <EmptyState
           icon={CircleDot}
-          message="No issues match the current filters or search."
+          message="No tasks match the current filters or search."
           action={createActionLabel}
           onAction={() => openCreateIssueDialog()}
         />

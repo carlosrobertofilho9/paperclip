@@ -98,9 +98,9 @@ export function Sidebar() {
         </div>
 
         <SidebarSection label="Work">
-          <SidebarNavItem to="/issues" label="Issues" icon={CircleDot} />
+          <SidebarNavItem to="/issues" label="Tasks" icon={CircleDot} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
-          <SidebarNavItem to="/goals" label="Goals" icon={Target} />
+          <SidebarNavItem to="/goals" label="Objectives" icon={Target} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
@@ -110,8 +110,8 @@ export function Sidebar() {
 
         <SidebarAgents />
 
-        <SidebarSection label="Company">
-          <SidebarNavItem to="/org" label="Org" icon={Network} />
+        <SidebarSection label="Article">
+          <SidebarNavItem to="/org" label="Research Team" icon={Network} />
           <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
           <SidebarNavItem to="/activity" label="Activity" icon={History} />

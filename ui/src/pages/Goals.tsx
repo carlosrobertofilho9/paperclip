@@ -17,7 +17,7 @@ export function Goals() {
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Goals" }]);
+    setBreadcrumbs([{ label: "Objectives" }]);
   }, [setBreadcrumbs]);
 
   const { data: goals, isLoading, error } = useQuery({

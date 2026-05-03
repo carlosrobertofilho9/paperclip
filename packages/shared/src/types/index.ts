@@ -1,3 +1,5 @@
+export type { ResearchProject } from "./research_project.js";
+/** @deprecated Use ResearchProject */
 export type { Company } from "./company.js";
 export type {
   Environment,
@@ -133,6 +135,43 @@ export type {
   IssueWorkProductReviewState,
 } from "./work-product.js";
 export type {
+  Task,
+  TaskAncestor,
+  TaskAncestorProject,
+  TaskAncestorGoal,
+  TaskLabel,
+  TaskAttachment,
+  TaskDocument,
+  TaskDocumentSummary,
+  TaskDocumentRevision,
+  TaskComment,
+  TaskExecutionPolicy,
+  TaskExecutionState,
+  TaskExecutionStage,
+  TaskExecutionStageParticipant,
+  TaskExecutionStagePrincipal,
+  TaskReviewRequest,
+  TaskExecutionDecision,
+  TaskRelation,
+  TaskRelationIssueSummary,
+  TaskRelatedWorkItem,
+  TaskRelatedWorkSummary,
+  TaskReferenceSource,
+  TaskProductivityReview,
+  TaskProductivityReviewTrigger,
+  TaskBlockerAttention,
+  TaskBlockerAttentionReason,
+  TaskBlockerAttentionState,
+  TaskAssigneeAdapterOverrides,
+  TaskThreadInteraction,
+  TaskThreadInteractionBase,
+  TaskThreadInteractionPayload,
+  TaskThreadInteractionResult,
+  TaskThreadInteractionActorFields,
+} from "./task.js";
+
+/** @deprecated Use Task and Task-related types */
+export type {
   Issue,
   IssueAssigneeAdapterOverrides,
   IssueBlockerAttention,
@@ -197,6 +236,9 @@ export type {
   IssueTreePreviewTotals,
   IssueTreePreviewWarning,
 } from "./issue-tree-control.js";
+export type { ScientificObjective } from "./scientific_objective.js";
+export type { ResearchMilestone } from "./research_milestone.js";
+/** @deprecated Use ScientificObjective or ResearchMilestone */
 export type { Goal } from "./goal.js";
 export type { Approval, ApprovalComment } from "./approval.js";
 export type {

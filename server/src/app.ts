@@ -188,6 +188,7 @@ export async function createApp(
     }),
   );
   api.use("/companies", companyRoutes(db, opts.storageService));
+  api.use("/research-projects", companyRoutes(db, opts.storageService));
   api.use(companySkillRoutes(db));
   api.use(agentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(assetRoutes(db, opts.storageService));
@@ -196,11 +197,17 @@ export async function createApp(
     feedbackExportService: opts.feedbackExportService,
     pluginWorkerManager: workerManager,
   }));
+  api.use("/tasks", issueRoutes(db, opts.storageService, {
+    feedbackExportService: opts.feedbackExportService,
+    pluginWorkerManager: workerManager,
+  }));
   api.use(issueTreeControlRoutes(db));
   api.use(routineRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(environmentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(executionWorkspaceRoutes(db));
   api.use(goalRoutes(db));
+  api.use("/scientific-objectives", goalRoutes(db));
+  api.use("/research-milestones", goalRoutes(db));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(secretRoutes(db));
   api.use(costRoutes(db, { pluginWorkerManager: workerManager }));

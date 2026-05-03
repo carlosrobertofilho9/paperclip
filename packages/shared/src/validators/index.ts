@@ -19,6 +19,15 @@ export {
 } from "./budget.js";
 
 export {
+  createResearchProjectSchema,
+  updateResearchProjectSchema,
+  updateResearchProjectBrandingSchema,
+  type CreateResearchProject,
+  type UpdateResearchProject,
+  type UpdateResearchProjectBranding,
+} from "./research_project.js";
+/** @deprecated Use researchProject schemas */
+export {
   createCompanySchema,
   updateCompanySchema,
   updateCompanyBrandingSchema,
@@ -148,6 +157,25 @@ export {
 } from "./project.js";
 
 export {
+  createTaskSchema,
+  createChildTaskSchema,
+  createTaskLabelSchema,
+  updateTaskSchema,
+  taskExecutionPolicySchema,
+  taskExecutionStateSchema,
+  checkoutTaskSchema,
+  addTaskCommentSchema,
+  createTaskThreadInteractionSchema,
+  upsertTaskDocumentSchema,
+  taskDocumentKeySchema,
+  type CreateTask,
+  type UpdateTask,
+  type CheckoutTask,
+  type AddTaskComment,
+} from "./task.js";
+
+/** @deprecated Use task schemas */
+export {
   createIssueSchema,
   createChildIssueSchema,
   createIssueLabelSchema,
@@ -239,6 +267,19 @@ export {
   type UpdateExecutionWorkspace,
 } from "./execution-workspace.js";
 
+export {
+  createScientificObjectiveSchema,
+  updateScientificObjectiveSchema,
+  type CreateScientificObjective,
+  type UpdateScientificObjective,
+} from "./scientific_objective.js";
+export {
+  createResearchMilestoneSchema,
+  updateResearchMilestoneSchema,
+  type CreateResearchMilestone,
+  type UpdateResearchMilestone,
+} from "./research_milestone.js";
+/** @deprecated Use scientificObjective or researchMilestone schemas */
 export {
   createGoalSchema,
   updateGoalSchema,

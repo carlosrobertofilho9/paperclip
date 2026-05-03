@@ -120,7 +120,7 @@ export function Agents() {
   }, [setBreadcrumbs]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view agents." />;
+    return <EmptyState icon={Bot} message="Select an article to view agents." />;
   }
 
   if (isLoading) {

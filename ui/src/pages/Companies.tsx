@@ -69,7 +69,7 @@ export function Companies() {
   });
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Companies" }]);
+    setBreadcrumbs([{ label: "My Articles" }]);
   }, [setBreadcrumbs]);
 
   function startEdit(companyId: string, currentName: string) {

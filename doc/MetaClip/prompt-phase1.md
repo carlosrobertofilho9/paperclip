@@ -2,138 +2,182 @@
 
 > **Status:** Draft  
 > **Base:** Fork do Paperclip (`HenkDz/paperclip`, branch `feat/externalize-hermes-adapter`)  
-> **Diretriz Geral:** REFACTORING PROFUNDO. Transformar o domínio core do Paperclip de "empresa de agentes" para "laboratório editorial científico". Renomear tabelas, tipos, rotas, serviços e UI completamente.
+> **Diretriz Geral:** Refactor profundo, mas **progressivo e validado**. Transformar o domínio core do Paperclip de "empresa de agentes" para "laboratório editorial científico", mas **sem quebrar funcionalidades existentes**. Usar compatibility aliases temporários quando necessário. Executar em duas subfases: 1A (domínio + UI) e 1B (workflow científico).
 
 ---
 
 ## 1. Visão do Produto
 
-Transformar o Paperclip em um **laboratório editorial científico** onde o usuário cria um projeto de revisão sistemática e "contrata" agentes especializados para executar etapas do manuscrito.
+Transformar o Paperclip em um **laboratório editorial científico** onde o usuário cria um artigo/projeto de revisão sistemática e o sistema monta automaticamente uma equipe de agentes especializados para executar as etapas do manuscrito.
 
-A metáfora de "empresa de agentes" vira "laboratório editorial". Todo o domínio é refatorado para refletir esse novo contexto.
+A UI do Paperclip é preservada com re-skin mínimo:
+- **Companies** → **My Articles** (lista de artigos/revisões)
+- **Company Dashboard** → **Article Dashboard**
+- **Org Chart** → **Research Team**
+- **Hire Employee** → **Add Agent**
+- **Tickets / Issues** → **Tasks**
 
----
-
-## 2. Refactoring Profundo do Domínio (Regras de Ouro)
-
-1. **Renomear tabelas/core internos.** O banco de dados, backend, frontend e pacotes compartilhados devem usar o novo domínio científico.
-2. **Manter a orquestração existente.** O sistema de heartbeats, delegação de tarefas, approval gates e logs de auditoria do Paperclip é preservado, mas renomeado.
-3. **Modificar > Adicionar.** Quando possível, renomear arquivos e funções existentes ao invés de criar novos paralelos.
-4. **O motor de workflow é o Paperclip refatorado.** O Research Director é um agente registrado que cria `scientific_objectives`, `research_milestones` e `tasks` usando o próprio sistema do MetaClip.
+A metáfora de "empresa de agentes" vira "laboratório editorial". O domínio de backend/banco é refatorado, mas de forma **incremental e segura**.
 
 ---
 
-## 3. Mapeamento de Domínio (Refatoração Completa)
+## 2. Diretriz de Implementação Recomendada
 
-| Paperclip (Antigo) | MetaClip (Novo) | Escopo |
-|--------------------|-----------------|--------|
-| `Company` | `ResearchProject` | Banco, API, UI, Shared |
-| `Employee` | `Agent` | Banco, API, UI, Shared |
-| `Mission` | `ScientificObjective` | Banco, API, UI, Shared |
-| `Goal` | `ResearchMilestone` | Banco, API, UI, Shared |
-| `Ticket` | `Task` | Banco, API, UI, Shared |
-| `Company Settings` | `ProjectSettings` | Banco, API, UI, Shared |
-| `Employee Role` | `AgentRole` | Banco, API, UI, Shared |
-| `Hire Employee` | `Hire Agent` | UI labels, rotas |
-| `Org Chart` | `Research Team` | UI labels, componentes |
-| `Adapter` | `Adapter` (mantido) | Sistema de plugins existente |
+Executar a Phase 1 em **duas subfases** para evitar refactor catastrófico e garantir que o projeto permaneça funcional em cada etapa.
+
+### Phase 1A — Scientific Domain Refactor + UI Reskin
+- Refatorar domínio principal: `Company` → `ResearchProject`, `Employee` → `Agent`, `Issue/Ticket` → `Task`.
+- Atualizar DB (`packages/db/`), Shared (`packages/shared/`), Server (`server/`) e UI (`ui/`).
+- **Manter compatibility aliases temporários** quando necessário para evitar quebra de funcionalidades existentes (ex: exports duplos, rotas alias, tipos alias).
+- Re-skin visual mínimo: Companies → My Articles, Employees → Agents, Org Chart → Research Team.
+- **Garantir que typecheck, testes e build passem** antes de iniciar a próxima subfase.
+
+### Phase 1B — Scientific Workflow MVP
+- Criar Research Director automaticamente ao criar ResearchProject.
+- Permitir criação dinâmica de agentes científicos via API interna.
+- Criar templates/configurações iniciais de agentes científicos.
+- Implementar integrações PubMed/CrossRef básicas.
+- Criar entidades `studies`, `prisma_flow`, `manuscripts`, `study_extractions`, `references`.
+- Criar Manuscript Editor estruturado em IMRaD.
+- Implementar approval gates científicos.
+
+---
+
+## 3. Mapeamento de Domínio (Refatoração Progressiva)
+
+| Paperclip (Antigo) | MetaClip (Novo) | Escopo | Notas |
+|--------------------|-----------------|--------|-------|
+| `Company` | `ResearchProject` | Banco, API, UI, Shared | Refatorar progressivamente. Manter aliases internos temporários se necessário. |
+| `Employee` | `Agent` | Banco, API, UI, Shared | Mesmo que acima. |
+| `Mission` | `ScientificObjective` | Banco, API, UI, Shared | Reaproveitar tabela `goals` com `level=company`. |
+| `Goal` (team/agent) | `ResearchMilestone` | Banco, API, UI, Shared | Reaproveitar tabela `goals` com `level=team/agent`. |
+| `Issue / Ticket` | `Task` | Banco, API, UI, Shared | Renomear tabela `issues` → `tasks`. |
+| `Company Settings` | `ProjectSettings` | Banco, API, UI, Shared | |
+| `Employee Role` | `AgentRole` | Banco, API, UI, Shared | |
+| `Hire Employee` | `Add Agent` | UI labels, rotas | |
+| `Org Chart` | `Research Team` | UI labels, componentes | |
+| `My Companies` | `My Articles` | UI labels | |
 
 ### Convenções de Nomenclatura
 - **Tabelas DB:** `snake_case` (`research_projects`, `agents`, `scientific_objectives`, `research_milestones`, `tasks`)
 - **Tipos TypeScript:** `PascalCase` (`ResearchProject`, `Agent`, `ScientificObjective`, `ResearchMilestone`, `Task`)
 - **Rotas API:** `kebab-case` (`/api/research-projects`, `/api/agents`, `/api/tasks`)
-- **Funções/Variáveis:** `camelCase` (`createResearchProject`, `hireAgent`, `assignTask`)
+- **Funções/Variáveis:** `camelCase` (`createResearchProject`, `addAgent`, `assignTask`)
+
+### Compatibility Aliases (Temporários)
+Durante a transição, quando a troca global gerar risco alto:
+- Manter aliases de tipos: `export type Company = ResearchProject` (com `@deprecated`)
+- Manter rotas alias: `POST /api/companies/:companyId/agents` → redireciona para `POST /api/research-projects/:researchProjectId/agents`
+- Manter exports duplos no `packages/shared/` até que todas as dependências sejam atualizadas
+- **Remover aliases apenas quando toda a base estiver migrada e validada**
 
 ---
 
-## 4. Adapters Científicos como Plugins (Opção A)
+## 4. Agentes Científicos Dinâmicos
 
-Os 8 agentes científicos são implementados como **adapters reais** usando o sistema de plugin existente do Paperclip (`packages/adapters/`). Eles não são templates abstratos — são adapters concretos que se registram no sistema, definem capabilities, tools, system prompts e UI parsers.
+Os agentes científicos são **agents (employees) criados dinamicamente pelo Research Director** usando a API interna do Paperclip. Eles usam adapters de LLM **já registrados no sistema** (ex: `claude_local`, `codex_local`, `openai`, etc.) e são configurados com system prompts, capabilities e tools específicas para cada função.
 
-### Como funciona
-- Cada agente científico é um **adapter especializado** que estende a interface base de adapters do Paperclip.
-- Usa o mesmo mecanismo de registro: podem ser built-in (código) ou carregados via `~/.paperclip/adapter-plugins.json` (externo).
-- Definem `capabilities` específicas (ex: `pubmed_search`, `screening`, `prisma_count`, `manuscript_write`).
-- O Research Director "contrata" (ativa/registra) esses adapters no projeto automaticamente.
+### Arquitetura
 
-### Lista de Adapters Científicos
+| Conceito | O que é | Exemplo |
+|----------|---------|---------|
+| **Adapter** | Motor de execução de LLM | `claude_local`, `codex_local`, `openai` |
+| **Agent** | Instância configurada usando um adapter | "Search Agent" usando `claude_local` com prompt de busca PICO |
 
-1. **Research Director Adapter**
-   - `name`: `research-director`
-   - *Papel:* Orquestra o projeto. É o **primeiro e único adapter ativado automaticamente** quando o usuário cria um Research Project.
-   - *Capabilities:* `team_assembly`, `objective_planning`, `milestone_creation`, `task_delegation`, `plan_adaptation`, `adapter_creation`
-   - *Ações:* Analisa o tipo de projeto, **cria e ativa os demais adapters científicos dinamicamente** usando a infraestrutura do Paperclip, cria objectives/milestones/tasks, adapta o plano se adapters forem desativados. Pode criar novos adapters sob demanda quando identificar necessidades não cobertas pelos adapters base.
+### Como o Research Director monta a equipe
 
-2. **Search Agent Adapter**
-   - `name`: `search-agent`
+```
+Usuário cria ResearchProject (define tema/pergunta)
+  ↓
+Research Director Agent é criado automaticamente
+  (adapterType: claude_local, role: research_director, canCreateAgents: true)
+  ↓
+Research Director chama API interna para criar os demais agents:
+  - Cria "Search Agent" (claude_local + systemPrompt de busca)
+  - Cria "Screening Agent" (claude_local + systemPrompt de screening)
+  - Cria "PRISMA Agent" (claude_local + systemPrompt PRISMA)
+  - Cria "Data Extraction Agent" (claude_local + systemPrompt extração)
+  - Cria "Methodology Agent" (claude_local + systemPrompt metodologia)
+  - Cria "Manuscript Writer" (claude_local + systemPrompt escrita)
+  - Cria "Peer Reviewer" (claude_local + systemPrompt revisão)
+```
+
+### Configuração de cada Agent
+
+Cada agente científico é criado com:
+- `name`: nome do agente (ex: "Search Agent")
+- `role`: função (ex: `search_agent`)
+- `adapterType`: um adapter de LLM existente (ex: `claude_local`)
+- `adapterConfig`: `{ systemPrompt: "...", model: "...", temperature: 0.2 }`
+- `capabilities`: string com capabilities (ex: `"pubmed_search,strategy_generation"`)
+- `runtimeConfig`: heartbeat, budget, permissões
+- `permissions`: `{ canCreateAgents: false, tasks: { assign: true } }`
+
+### ⚠️ Configuração Crítica: `requireBoardApprovalForNewAgents`
+A tabela `research_projects` (ex-`companies`) tem o campo `requireBoardApprovalForNewAgents`. Se `true`, todo agente criado pelo Director fica em `status: "pending_approval"` e **nunca executa** até o humano aprovar.
+
+**Recomendação:** Definir `requireBoardApprovalForNewAgents: false` por padrão nos `research_projects`, ou dar ao Research Director permissão explícita de bypass (`permissions.canApproveHires: true`). Caso contrário, o fluxo automático de criação de equipe quebra na primeira etapa.
+
+### Lista de Agentes Científicos (Kit Padrão)
+
+1. **Research Director**
+   - `role`: `research_director`
+   - *Papel:* Orquestra o projeto. Criado automaticamente. Tem `canCreateAgents: true` para poder criar os demais.
+   - *Capabilities:* `team_assembly`, `objective_planning`, `milestone_creation`, `task_delegation`, `plan_adaptation`
+
+2. **Search Agent**
+   - `role`: `search_agent`
    - *Capabilities:* `pubmed_search`, `strategy_generation`, `pico_formulation`, `study_import`
-   - *Ações:* Gera string de busca PICO, chama PubMed API, salva resultados em `studies`.
 
-3. **Screening Agent Adapter**
-   - `name`: `screening-agent`
+3. **Screening Agent**
+   - `role`: `screening_agent`
    - *Capabilities:* `inclusion_criteria`, `abstract_screening`, `study_classification`
-   - *Ações:* Analisa títulos/abstracts, propõe critérios de inclusão/exclusão, atualiza `inclusion_status`.
 
-4. **PRISMA Agent Adapter**
-   - `name`: `prisma-agent`
+4. **PRISMA Agent**
+   - `role`: `prisma_agent`
    - *Capabilities:* `prisma_flow`, `study_counting`, `diagram_generation`
-   - *Ações:* Atualiza a tabela `prisma_flow`, contagem por stage (identification, screening, eligibility, included).
 
-5. **Data Extraction Agent Adapter**
-   - `name`: `extraction-agent`
+5. **Data Extraction Agent**
+   - `role`: `extraction_agent`
    - *Capabilities:* `data_extraction`, `extraction_protocol`, `study_synthesis`
-   - *Ações:* Preenche `study_extractions` baseado em protocolo definido.
 
-6. **Methodology Agent Adapter**
-   - `name`: `methodology-agent`
+6. **Methodology Agent**
+   - `role`: `methodology_agent`
    - *Capabilities:* `protocol_write`, `methods_section`, `search_description`
-   - *Ações:* Gera texto da seção Methods, descreve protocolo PRISMA e estratégia de busca.
 
-7. **Manuscript Writer Adapter**
-   - `name`: `manuscript-writer`
+7. **Manuscript Writer**
+   - `role`: `manuscript_writer`
    - *Capabilities:* `section_write`, `introduction_write`, `results_write`, `discussion_write`, `reference_integration`
-   - *Ações:* Preenche seções do `manuscript` com base em dados extraídos e referências verificadas.
 
-8. **Peer Reviewer Adapter**
-   - `name`: `peer-reviewer`
+8. **Peer Reviewer**
+   - `role`: `peer_reviewer`
    - *Capabilities:* `manuscript_review`, `critical_analysis`, `comment_generation`, `rework_task_creation`
-   - *Ações:* Lê seções do manuscrito, gera comentários críticos, cria tasks de rework.
 
-### Estrutura de cada Adapter
-Cada adapter deve implementar a interface base do Paperclip (`createServerAdapter` ou equivalente) e incluir:
-- `name`, `displayName`, `description`
-- `configSchema`: campos de configuração (ex: modelo LLM preferido, temperatura)
-- `capabilities`: array de strings
-- `tools`: funções que o agente pode chamar (ex: `searchPubMed`, `updateStudyStatus`, `writeManuscriptSection`)
-- `systemPrompt`: instruções de comportamento científico
-- `detectModel` (opcional): detectar qual modelo está disponível
-- `uiParser` (opcional): como renderizar outputs específicos na UI
+### Criação Dinâmica Ilimitada (Suporte Nativo do Paperclip)
+O Research Director **não está limitado aos 8 agents pré-definidos**. Ele pode criar **qualquer agente dinamicamente** conforme a necessidade do projeto:
+- Novos roles especializados (ex: "Statistical Analyst", "Ethics Reviewer", "Data Visualizer")
+- Sub-equipes para subtarefas complexas
+- Agents temporários para tarefas pontuais
 
-### Registro
-- Built-in: código em `packages/adapters/src/scientific/` ou similar.
-- Externo: podem ser empacotados como npm packages e carregados via `~/.paperclip/adapter-plugins.json`, usando o mesmo mecanismo de plugin do fork.
+### Fluxo Personalizado (Workflow Dinâmico)
+O Director pode criar **milestones e tasks fora do plano padrão**:
+- Adicionar etapas não previstas (ex: "Subgroup Analysis", "Sensitivity Analysis")
+- Reorganizar ordem de execução baseado em resultados intermediários
+- Criar branches paralelos de trabalho quando apropriado
+- Adaptar o workflow ao tipo específico de revisão (narrative review, scoping review, meta-analysis, etc.)
 
 ---
 
 ## 5. Fluxo de Trabalho Automático (Workflow Engine)
 
-O fluxo é **acionado automaticamente** quando um projeto é criado.
-
 ```
-Usuário cria ResearchProject (define tema/pergunta)
+Usuário cria ResearchProject (define tema/pergunta PICO)
   ↓
-Research Director Adapter é automaticamente ativado
+Research Director Agent é criado automaticamente
   ↓
-Research Director analisa o tipo de projeto e ativa os demais adapters:
-  - search-agent
-  - screening-agent
-  - prisma-agent
-  - extraction-agent
-  - methodology-agent
-  - manuscript-writer
-  - peer-reviewer
+Research Director cria os demais agents da equipe via API
   ↓
-Research Director cria ScientificObjective: "Systematic Review: [Tema]"
+Research Director cria ScientificObjective: "Revisão Sistemática: [Tema]"
   ↓
 Research Director cria ResearchMilestones:
   - Milestone 1: Definir Pergunta e Protocolo
@@ -143,18 +187,16 @@ Research Director cria ResearchMilestones:
   - Milestone 5: Revisão por Pares
   ↓
 Para cada Milestone, o Research Director cria Tasks:
-  - Task -> Delega para search-agent (Milestone 2)
-  - Task -> Delega para screening-agent (Milestone 2)
-  - Task -> Delega para prisma-agent (Milestone 2)
-  - Task -> Delega para extraction-agent (Milestone 3)
-  - Task -> Delega para methodology-agent (Milestone 4)
-  - Task -> Delega para manuscript-writer (Milestone 4)
-  - Task -> Delega para peer-reviewer (Milestone 5)
+  - Task → Search Agent (Milestone 2)
+  - Task → Screening Agent (Milestone 2)
+  - Task → PRISMA Agent (Milestone 2)
+  - Task → Data Extraction Agent (Milestone 3)
+  - Task → Methodology Agent (Milestone 4)
+  - Task → Manuscript Writer (Milestone 4)
+  - Task → Peer Reviewer (Milestone 5)
 ```
 
-**Comportamento de Delegação:** O Research Director usa a API interna para criar tasks e atribuí-las aos agents (adapters ativados). Se um adapter for desativado/pausado pelo usuário, o Director detecta e adapta o plano (delega para outro adapter com capabilities similares, cria task genérica, ou **cria um novo adapter dinamicamente** para cobrir a necessidade).
-
-**Adaptação da Equipe:** Se o usuário desativar um adapter (ex: extraction-agent), o Research Director adapta o plano automaticamente (ex: delega extração para methodology-agent, cria task genérica, ou **gera e registra um novo adapter especializado** para substituir a função).
+**Comportamento de Delegação:** O Research Director usa a API interna do Paperclip para criar tasks e atribuí-las aos agents. Se um agente for pausado/removido, o Director detecta e adapta (redistribui ou cria novo agente).
 
 ---
 
@@ -164,23 +206,23 @@ Criar no `packages/db/src/schema/` (e exportar em `index.ts`). Manter todas **pr
 
 ### 6.1 `research_projects`
 - `id`, `name`, `description`, `research_question`, `pico_p`, `pico_i`, `pico_c`, `pico_o`, `status` (draft, active, completed, archived), `created_at`, `updated_at`.
-- **Nota:** Substitui `companies` como a entidade raiz de escopo. Todas as outras tabelas apontam para `research_project_id`.
+- **Nota:** Substitui `companies`.
 
 ### 6.2 `agents`
-- `id`, `research_project_id`, `name`, `adapter_id` (referência ao adapter registrado), `role` (research_director, search, screening, prisma, extraction, methodology, writer, reviewer), `status` (active, paused, terminated), `configuration` (JSONB), `cost_per_task`, `created_at`, `updated_at`.
-- **Nota:** Substitui `employees`. Cada agent é uma instância de um adapter ativado no projeto.
+- `id`, `research_project_id`, `name`, `role`, `title`, `icon`, `status`, `reports_to`, `adapter_type`, `adapter_config` (JSONB), `runtime_config` (JSONB), `capabilities`, `budget_monthly_cents`, `spent_monthly_cents`, `permissions` (JSONB), `last_heartbeat_at`, `metadata` (JSONB), `created_at`, `updated_at`.
+- **Nota:** Substitui `employees`. Mesma estrutura, nomes novos.
 
 ### 6.3 `scientific_objectives`
-- `id`, `research_project_id`, `title`, `description`, `status` (active, completed, cancelled), `priority`, `created_at`, `updated_at`.
-- **Nota:** Substitui `missions`.
+- `id`, `research_project_id`, `title`, `description`, `status` (active, completed, cancelled), `priority`, `parent_id`, `owner_agent_id`, `created_at`, `updated_at`.
+- **Nota:** Substitui `goals` com `level=company`.
 
 ### 6.4 `research_milestones`
-- `id`, `scientific_objective_id`, `research_project_id`, `title`, `description`, `status` (pending, active, completed, blocked), `due_date`, `created_at`, `updated_at`.
-- **Nota:** Substitui `goals`.
+- `id`, `scientific_objective_id`, `research_project_id`, `title`, `description`, `status` (pending, active, completed, blocked), `due_date`, `owner_agent_id`, `created_at`, `updated_at`.
+- **Nota:** Substitui `goals` com `level=team/agent`.
 
 ### 6.5 `tasks`
-- `id`, `research_milestone_id`, `scientific_objective_id`, `research_project_id`, `agent_id`, `title`, `description`, `status` (pending, in_progress, blocked, completed, failed), `approval_status` (not_required, pending, approved, rejected), `cost`, `created_at`, `updated_at`, `completed_at`.
-- **Nota:** Substitui `tickets`.
+- `id`, `research_project_id`, `scientific_objective_id`, `research_milestone_id`, `parent_id`, `title`, `description`, `status`, `priority`, `assignee_agent_id`, `assignee_user_id`, `checkout_run_id`, `execution_run_id`, `execution_locked_at`, `created_by_agent_id`, `created_by_user_id`, `identifier`, `request_depth`, `execution_policy`, `execution_state`, `execution_workspace_id`, `created_at`, `updated_at`.
+- **Nota:** Substitui `issues`.
 
 ### 6.6 `studies`
 - `id`, `research_project_id`, `pmid`, `doi`, `title`, `authors`, `abstract`, `journal`, `year`, `source` (pubmed, crossref, manual), `search_strategy_id`, `inclusion_status` (pending, included, excluded), `exclusion_reason`, `created_at`.
@@ -188,26 +230,43 @@ Criar no `packages/db/src/schema/` (e exportar em `index.ts`). Manter todas **pr
 ### 6.7 `prisma_flow`
 - `id`, `research_project_id`, `stage` (identification, screening, eligibility, included), `count`, `description`, `updated_at`.
 
-### 6.8 `manuscripts`
-- `id`, `research_project_id`, `title`, `introduction`, `methods`, `results`, `discussion`, `conclusion`, `references_json`, `version`, `status` (draft, under_review, approved), `created_at`, `updated_at`.
+### 6.8 `manuscripts` (via Documents do Paperclip)
+**Recomendação arquitetural:** Reaproveitar o sistema de documents existente do Paperclip (`documents`, `document_revisions`, `issue_documents`) em vez de criar uma tabela nova.
 
-### 6.9 `study_extractions`
-- `id`, `research_project_id`, `study_id`, `extraction_data` (JSONB), `extracted_by_agent_id`, `created_at`.
+- Criar um documento com `key: "manuscript"` ligado ao `research_project_id`.
+- O Manuscript Writer edita o documento via API de documents já existente (`PUT /issues/:issueId/documents/:key`).
+- `document_revisions` fornece versionamento automático do rascunho.
+- Se necessário, criar tabela auxiliar `manuscript_metadata` para campos específicos (status, references_json, etc.).
+- **Benefícios:** Versionamento, histórico, audit trail e colaboração já prontos.
+
+### 6.9 Uso de `projects` para Sub-fases do Artigo
+**Recomendação arquitetural:** Reaproveitar a tabela `projects` existente do Paperclip para representar sub-fases do artigo, em vez de sobrecarregar `research_projects`.
+
+- Projeto "Fase 1: Busca e Screening" → `lead_agent_id: search_agent_id`
+- Projeto "Fase 2: Extração e Síntese" → `lead_agent_id: extraction_agent_id`
+- Cada fase tem seu próprio `goal_id`, `env`, `status` e execution workspace.
+- Tasks (`issues`) são ligadas ao `project_id` correspondente.
+- **Benefícios:** Hierarquia natural, workspaces isolados por fase, lead agent por fase, já suportado nativamente.
 
 ### 6.10 `references`
 - `id`, `research_project_id`, `study_id`, `doi`, `pmid`, `url`, `citation_text`, `verified` (boolean), `created_at`.
 - **Regra:** Nenhuma referência entra no artigo sem `doi`, `pmid` ou `url` validável.
 
-### 6.11 `activity_logs`
-- **Nota:** Renomear/Adaptar tabela existente de logs. `entity_type` deve suportar os novos nomes (`research_project`, `agent`, `task`, etc.).
+### 6.11 `study_extractions`
+- `id`, `research_project_id`, `study_id`, `extraction_data` (JSONB), `extracted_by_agent_id`, `created_at`.
+
+### 6.12 `activity_logs`
+- **Nota:** Adaptar tabela existente. `entity_type` suporta novos nomes.
 
 ---
 
 ## 7. Editor de Manuscrito Estruturado
 
+**Baseado no sistema de Documents do Paperclip.** O editor manipula um documento `manuscript` ligado ao projeto, com versionamento automático via `document_revisions`.
+
 Nova página na UI: `/research-projects/:id/manuscript`.
 
-### Layout
+### Layout (mesmo padrão visual do Paperclip)
 ```
 +-------------------------------------------------------------+
 |  Sidebar Agents  |  Editor Central  |  Painel Ref/Logs      |
@@ -222,151 +281,167 @@ Nova página na UI: `/research-projects/:id/manuscript`.
 +-------------------------------------------------------------+
 ```
 
-### Funcionalidades do Editor
-- Cada seção (Intro, Methods, Results, Discussion, Conclusion) é um **textarea Markdown**.
-- O **Manuscript Writer** preenche esses campos via tool calls.
-- O humano edita manualmente.
-- **Painel de Referências:** Lista `references` com status `verified`. Botão "Add Reference" (manual) ou "Import from Studies".
-- **Painel de Revisão:** Comentários gerados pelo Peer Reviewer (associados a seções/linhas do manuscrito).
-
-### Tecnologia
-- Usar componentes React existentes do Paperclip como base.
-- Markdown puro é suficiente para Phase 1.
+### Funcionalidades
+- Seções IMRaD como **textarea Markdown**.
+- Manuscript Writer preenche via tool calls.
+- Painel de Referências: lista `references` com `verified`.
+- Painel de Revisão: comentários do Peer Reviewer.
 
 ---
 
-## 8. Integrações Científicas (Fonte de Verdade)
+## 8. Integrações Científicas
 
 ### 8.1 PubMed (E-utilities)
 - **Endpoint:** `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/`
-- **Funções:**
-  - `esearch.fcgi` — busca por termo, retorna PMIDs.
-  - `efetch.fcgi` — busca metadados (title, abstract, authors, journal) por PMID.
-- **Rate limit:** 3 requisições/segundo sem API key; 10 com API key. Implementar throttling.
+- **Funções:** `esearch.fcgi` (busca → PMIDs), `efetch.fcgi` (metadados)
+- **Rate limit:** 3 req/s sem API key; 10 com API key.
 - **Localização:** `packages/integrations/src/pubmed/`.
 
 ### 8.2 CrossRef
 - **Endpoint:** `https://api.crossref.org/works/`
-- **Função:** Resolver DOI -> metadados. Validar existência de DOI.
 - **Localização:** `packages/integrations/src/crossref/`.
 
 ### 8.3 Upload Manual de PDFs
 - **Localização:** `server/src/routes/uploads.ts`.
-- **Funcionalidade:** Endpoint para upload de PDF. Salvar arquivo e referenciar.
-- **Nota:** Extração automática complexa de PDF **fica fora** da Phase 1.
+- **Nota:** Extração complexa fica fora da Phase 1.
 
 ---
 
-## 9. Governança Científica (Approval Gates)
+## 9. Governança Científica — Human Review Obrigatório (Hard Gates)
 
-Reaproveitar e renomear o sistema de approval do Paperclip. Criar novos tipos:
+Na Fase 1, o sistema **trava automaticamente** o workflow em 4 pontos críticos até aprovação humana obrigatória. Nenhuma task subsequente pode avançar sem o board aprovar.
 
-1. **Approve Search Strategy** — Aprova string de busca PICO.
-2. **Approve Inclusion Criteria** — Aprova critérios de inclusão/exclusão.
-3. **Approve Extraction Protocol** — Aprova campos da tabela de extração.
-4. **Approve Manuscript Version** — Aprova rascunho do manuscrito.
+### 4 Hard Gates Obrigatórios
 
-**Comportamento:** Enquanto o approval não for dado, as tasks dependentes ficam em estado `blocked`. O humano aprova via UI.
+1. **PICO Question Approval**
+   - **Quando:** Após o Research Director propor a pergunta de pesquisa PICO.
+   - **Bloqueia:** Criação de milestones/tasks subsequentes até aprovação.
+   - **UI:** Botão "Approve PICO" no dashboard do projeto.
+
+2. **Search Strategy Approval**
+   - **Quando:** Após o Search Agent propor a string de busca PICO e bancos de dados.
+   - **Bloqueia:** Execução da busca no PubMed e importação de studies.
+   - **UI:** Painel de revisão da estratégia com opção de editar antes de aprovar.
+
+3. **Inclusion/Exclusion Criteria Approval**
+   - **Quando:** Após o Screening Agent propor critérios de inclusão/exclusão.
+   - **Bloqueia:** Screening de studies e atualização de `inclusion_status`.
+   - **UI:** Tabela de critérios editável com approve/reject.
+
+4. **Manuscript Final Approval**
+   - **Quando:** Após o Manuscript Writer gerar o rascunho completo do artigo.
+   - **Bloqueia:** Marcação do manuscrito como "approved" e geração de versão final.
+   - **UI:** Editor de manuscrito com botão "Approve Final Version".
+
+### Comportamento do Sistema
+- O Research Director cria as tasks normalmente, mas as tasks dependentes de um hard gate recebem `status: blocked` e `approval_status: pending`.
+- O board (humano) recebe notificação visual no dashboard quando há gates pendentes.
+- Após aprovação, as tasks blocked são automaticamente desbloqueadas (`status: todo`) e o workflow continua.
+- Se rejeitado, o Research Director recebe uma task de rework para corrigir o artefato.
+- Toda decisão de approve/reject é logada em `activity_log` para auditoria.
 
 ---
 
-## 10. Estrutura de Refatoração por Camada
+## 10. Estrutura de Refatoração por Camada (Phase 1A)
 
 ### 10.1 Database (`packages/db/`)
-- [ ] Renomear schema `companies.ts` → `research_projects.ts` (ou criar novo e remover antigo).
+- [ ] Renomear schema `companies.ts` → `research_projects.ts`.
 - [ ] Renomear schema `employees.ts` → `agents.ts`.
-- [ ] Renomear schema `missions.ts` → `scientific_objectives.ts`.
-- [ ] Renomear schema `goals.ts` → `research_milestones.ts`.
-- [ ] Renomear schema `tickets.ts` → `tasks.ts`.
+- [ ] Renomear schema `goals.ts` → `scientific_objectives.ts` (level=company) + `research_milestones.ts` (level=team/agent).
+- [ ] Renomear schema `issues.ts` → `tasks.ts`.
 - [ ] Criar schemas: `studies.ts`, `prisma_flow.ts`, `manuscripts.ts`, `study_extractions.ts`, `references.ts`.
 - [ ] Atualizar `index.ts` de exports.
-- [ ] Gerar novas migrações (`pnpm db:generate`).
+- [ ] Gerar migrações (`pnpm db:generate`).
 
 ### 10.2 Shared (`packages/shared/`)
-- [ ] Renomear tipos: `Company` → `ResearchProject`, `Employee` → `Agent`, etc.
-- [ ] Renomear validadores (Zod schemas).
+- [ ] Renomear tipos: `Company` → `ResearchProject`, `Employee` → `Agent`, `Goal` → `ScientificObjective`/`ResearchMilestone`, `Issue` → `Task`.
+- [ ] Renomear validadores (Zod).
 - [ ] Renomear constantes de API paths (`/api/companies` → `/api/research-projects`).
-- [ ] Atualizar exports.
+- [ ] Adicionar aliases temporários (`export type Company = ResearchProject`) com `@deprecated` se necessário para compatibilidade.
 
 ### 10.3 Server (`server/`)
-- [ ] Renomear rotas: `companies.routes.ts` → `research-projects.routes.ts`.
-- [ ] Renomear serviços: `companies.service.ts` → `research-projects.service.ts`.
+- [ ] Criar novas rotas: `/api/research-projects` (companies renomeado).
+- [ ] Criar novas rotas: `/api/tasks` (issues renomeado).
+- [ ] Manter rotas antigas como **alias temporários** (ex: `/api/companies/*` → `/api/research-projects/*`) durante a transição.
+- [ ] Renomear serviços internos.
 - [ ] Atualizar middlewares de company-scoping para project-scoping.
-- [ ] Atualizar auth/permissions.
 - [ ] Criar novas rotas: `studies.routes.ts`, `manuscripts.routes.ts`, `search.routes.ts`.
-- [ ] Criar novos serviços: `pubmed.service.ts`, `crossref.service.ts`.
+- [ ] Criar serviços: `pubmed.service.ts`, `crossref.service.ts`.
 
 ### 10.4 UI (`ui/`)
-- [ ] Renomear páginas: `CompaniesPage` → `ResearchProjectsPage`.
-- [ ] Renomear componentes: `EmployeeCard` → `AgentCard`, `OrgChart` → `ResearchTeam`.
-- [ ] Atualizar hooks de API (`useCompanies` → `useResearchProjects`).
+- [ ] Re-skin de labels: `Companies` → `Articles`, `Employees` → `Agents`, etc.
+- [ ] Renomear hooks: `useCompanies` → `useResearchProjects`.
 - [ ] Atualizar rotas do React Router.
-- [ ] Criar novas páginas: `ManuscriptEditorPage`, `StudiesPage`, `PRISMAViewPage`.
-- [ ] Criar novos componentes: `IMRaDEditor`, `ReferencePanel`, `AgentSidebar`.
-
-### 10.5 Adapters (`packages/adapters/`)
-- [ ] Criar diretório `packages/adapters/src/scientific/`.
-- [ ] Implementar 8 adapters científicos usando a interface base existente.
-- [ ] Cada adapter deve exportar `createServerAdapter()` com `name`, `capabilities`, `tools`, `systemPrompt`, `configSchema`.
-- [ ] O Research Director deve conseguir ativar/desativar adapters dinamicamente via API.
-- [ ] Garantir que adapters científicos funcionem tanto built-in quanto via plugin externo (`~/.paperclip/adapter-plugins.json`).
+- [ ] Criar páginas: `ManuscriptEditorPage`, `StudiesPage`.
+- [ ] Criar componentes: `IMRaDEditor`, `ReferencePanel`.
 
 ---
 
-## 11. Critérios de Aceitação do MVP (Definition of Done)
+## 11. Critérios de Aceitação do MVP
 
-- [ ] Domínio completamente refatorado: `ResearchProject`, `Agent`, `ScientificObjective`, `ResearchMilestone`, `Task` substituem `Company`, `Employee`, `Mission`, `Goal`, `Ticket` em todo o stack (DB, Shared, Server, UI).
-- [ ] Migrações de banco geradas e aplicadas com sucesso.
-- [ ] Usuário pode criar um `ResearchProject`.
-- [ ] Ao criar um Research Project, o Research Director Adapter é automaticamente ativado e **cria/ativa os demais adapters científicos dinamicamente** usando a infraestrutura do Paperclip.
-- [ ] O Research Director automaticamente cria objectives/milestones/tasks.
-- [ ] Search Agent Adapter pode receber uma task, gerar string de busca PICO e buscar no PubMed. Resultados salvos em `studies`.
-- [ ] Screening Agent Adapter pode receber uma task e atualizar `inclusion_status` de estudos.
-- [ ] PRISMA Agent Adapter pode atualizar a tabela `prisma_flow`.
-- [ ] Manuscript Writer Adapter pode receber uma task e preencher seções do `manuscript`.
-- [ ] Peer Reviewer Adapter pode receber uma task e gerar comentários críticos.
-- [ ] Editor de Manuscrito Estruturado (IMRaD) funciona na UI.
-- [ ] Sistema de Approval Gates funciona para "Search Strategy", "Inclusion Criteria" e "Manuscript Version".
-- [ ] Nenhuma referência sem DOI/PMID/URL pode ser marcada como `verified`.
-- [ ] Logs de auditoria mostram ações dos agents científicos.
-- [ ] Adapters científicos são compatíveis com o sistema de plugin existente (podem ser built-in ou carregados externamente).
+### Phase 1A — Domain Refactor + UI Reskin
+- [ ] Domínio refatorado: `ResearchProject`, `Agent`, `ScientificObjective`, `ResearchMilestone`, `Task` em todo o stack (DB, Shared, Server, UI).
+- [ ] Migrações geradas e aplicadas com sucesso.
+- [ ] Compatibility aliases funcionam (rotas antigas redirecionam, tipos antigos ainda compilam com `@deprecated`).
+- [ ] UI com re-skin mínimo: labels trocadas, navegação preservada.
 - [ ] Typecheck passa (`pnpm -r typecheck`).
-- [ ] Testes unitários passam (`pnpm test:run`).
+- [ ] Testes passam (`pnpm test:run`).
+- [ ] Build passa (`pnpm build`).
+
+### Phase 1B — Scientific Workflow MVP
+- [ ] Usuário pode criar um `ResearchProject`.
+- [ ] Research Director Agent é criado automaticamente ao criar projeto.
+- [ ] Research Director cria dinamicamente os demais agents da equipe via API interna.
+- [ ] Cada agente científico usa adapter de LLM existente (claude_local, etc.) com system prompt e capabilities específicas.
+- [ ] Research Director cria objectives/milestones/tasks automaticamente.
+- [ ] Search Agent busca PubMed e salva em `studies`.
+- [ ] Screening Agent atualiza `inclusion_status`.
+- [ ] PRISMA Agent atualiza `prisma_flow`.
+- [ ] Manuscript Writer preenche seções do `manuscript`.
+- [ ] Peer Reviewer gera comentários críticos.
+- [ ] Editor de Manuscrito Estruturado funciona (IMRaD + referências).
+- [ ] Human Review Hard Gates funcionam: PICO Question, Search Strategy, Inclusion/Exclusion Criteria, Manuscript Final Approval.
+- [ ] Tasks dependentes de gates pendentes ficam `blocked` automaticamente.
+- [ ] Aprovação humana desbloqueia tasks subsequentes automaticamente.
+- [ ] Rejeição cria task de rework para o Research Director.
+- [ ] Nenhuma referência sem DOI/PMID/URL pode ser `verified`.
+- [ ] Typecheck passa (`pnpm -r typecheck`).
+- [ ] Testes passam (`pnpm test:run`).
 - [ ] Build passa (`pnpm build`).
 
 ---
 
 ## 12. Fora do Escopo da Phase 1
 
-- Meta-análise automática ou estatística.
-- Geração de Forest Plot, Funnel Plot.
-- Extração automática complexa de PDF (OCR, tabelas).
+- Meta-análise estatística ou Forest Plots.
+- Extração automática complexa de PDF.
 - Escrita final 100% pronta para submissão.
 - Submissão automática para revistas.
-- Criação livre de adapters pelo usuário (só os 8 adapters científicos pré-definidos).
+- Criação de novos adapters/types (só agents usando adapters existentes).
 - Editor rich-text colaborativo real-time.
-- Integrações além de PubMed e CrossRef.
+- Integrações além de PubMed/CrossRef.
+- Remoção completa de aliases de compatibilidade (isso vem em Phase 2).
 
 ---
 
-## 13. Notas Técnicas Específicas do Fork
+## 13. Notas Técnicas do Fork
 
-- **Porta:** O fork roda em `3101+` (auto-detecta se 3100 está ocupada).
-- **Build UI NTFS:** Se `npx vite build` travar, usar `node node_modules/vite/bin/vite.js build`.
-- **Startup:** Servidor pode levar 30-60s para iniciar em NTFS.
-- **Kill processes:** `pkill -f "paperclip"; pkill -f "tsx.*index.ts"` antes de reiniciar.
-- **Cache Vite:** `rm -rf ui/dist ui/node_modules/.vite` se houver problemas.
-- **DB Dev:** Deixar `DATABASE_URL` unset para usar PGlite. Resetar com `rm -rf data/pglite`.
+- **Porta:** `3101+` (auto-detecta se 3100 ocupada).
+- **Build UI NTFS:** Usar `node node_modules/vite/bin/vite.js build` se `npx vite build` travar.
+- **Startup:** 30-60s em NTFS.
+- **Kill processes:** `pkill -f "paperclip"; pkill -f "tsx.*index.ts"`.
+- **Cache Vite:** `rm -rf ui/dist ui/node_modules/.vite`.
+- **DB Dev:** `DATABASE_URL` unset → PGlite. Reset: `rm -rf data/pglite`.
 
 ---
 
-## 14. Próximos Passos Imediatos para o Agente
+## 14. Próximos Passos
 
-1. Ler `doc/GOAL.md`, `doc/PRODUCT.md`, `doc/SPEC-implementation.md`, `doc/DEVELOPING.md`, `doc/DATABASE.md`.
-2. Explorar `packages/db/src/schema/` para mapear todas as tabelas a serem renomeadas.
-3. Explorar `packages/shared/src/` para mapear tipos e constantes.
-4. Explorar `packages/adapters/` para entender a interface base de adapters e como criar novos.
-5. Explorar `server/src/routes/` e `server/src/services/` para mapear renomeações.
-6. Explorar `ui/src/pages/` e `ui/src/components/` para mapear renomeações.
-7. Criar plano técnico detalhado em `doc/plans/YYYY-MM-DD-metaclip-phase1-refactor.md`.
-8. Iniciar pela camada de banco (DB schema + migrações), depois Shared, Adapters, Server e UI.
+1. Ler docs do projeto (`doc/GOAL.md`, `doc/PRODUCT.md`, etc.).
+2. Explorar `packages/db/src/schema/` para mapear tabelas.
+3. Explorar `packages/shared/src/` para tipos e constantes.
+4. Explorar `server/src/routes/` e `server/src/services/`.
+5. Explorar `server/src/services/agents.ts` para entender criação dinâmica de agents.
+6. Explorar `ui/src/pages/` para mapear renomeações.
+7. Criar plano técnico em `doc/plans/YYYY-MM-DD-metaclip-phase1.md`.
+8. Iniciar pela **Phase 1A** (banco → shared → server → UI), validar, depois **Phase 1B**.

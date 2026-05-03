@@ -771,7 +771,7 @@ export function ExecutionWorkspaceDetail() {
             items={[
               { value: "configuration", label: "Configuration" },
               { value: "runtime_logs", label: "Runtime logs" },
-              { value: "issues", label: "Issues" },
+              { value: "issues", label: "Tasks" },
               { value: "routines", label: "Routines" },
             ]}
             align="start"

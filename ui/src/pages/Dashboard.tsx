@@ -176,7 +176,7 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Paperclip. Set up your first company and agent to get started."
+          message="Welcome to Paperclip. Set up your first article and agent to get started."
           action="Get Started"
           onAction={openOnboarding}
         />
@@ -295,10 +295,10 @@ export function Dashboard() {
             <ChartCard title="Run Activity" subtitle="Last 14 days">
               <RunActivityChart activity={data.runActivity} />
             </ChartCard>
-            <ChartCard title="Issues by Priority" subtitle="Last 14 days">
+            <ChartCard title="Tasks by Priority" subtitle="Last 14 days">
               <PriorityChart issues={issues ?? []} />
             </ChartCard>
-            <ChartCard title="Issues by Status" subtitle="Last 14 days">
+            <ChartCard title="Tasks by Status" subtitle="Last 14 days">
               <IssueStatusChart issues={issues ?? []} />
             </ChartCard>
             <ChartCard title="Success Rate" subtitle="Last 14 days">

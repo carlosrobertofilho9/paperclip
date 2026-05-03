@@ -117,8 +117,8 @@ export function NewAgent() {
 
   useEffect(() => {
     if (isFirstAgent) {
-      if (!name) setName("CEO");
-      if (!title) setTitle("CEO");
+      if (!name) setName("Research Director");
+      if (!title) setTitle("Research Director");
     }
   }, [isFirstAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -304,14 +304,14 @@ export function NewAgent() {
         <div className="border-t border-border px-4 py-4">
           <div className="space-y-3">
             <div>
-              <h2 className="text-sm font-medium">Company skills</h2>
+              <h2 className="text-sm font-medium">Article skills</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Optional skills from the company library. Built-in Paperclip runtime skills are added automatically.
+                Optional skills from the article library. Built-in Paperclip runtime skills are added automatically.
               </p>
             </div>
             {availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No optional company skills installed yet.
+                No optional article skills installed yet.
               </p>
             ) : (
               <div className="space-y-3">
@@ -342,7 +342,7 @@ export function NewAgent() {
         {/* Footer */}
         <div className="border-t border-border px-4 py-3">
           {isFirstAgent && (
-            <p className="text-xs text-muted-foreground mb-2">This will be the CEO</p>
+            <p className="text-xs text-muted-foreground mb-2">This will be the Research Director</p>
           )}
           {formError && (
             <p className="text-xs text-destructive mb-2">{formError}</p>

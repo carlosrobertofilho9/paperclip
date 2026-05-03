@@ -672,7 +672,7 @@ export function CompanyExport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Org Chart", href: "/org" },
+      { label: "Research Team", href: "/org" },
       { label: "Export" },
     ]);
   }, [setBreadcrumbs]);
@@ -789,7 +789,7 @@ export function CompanyExport() {
 
     // Regenerate README.md based on checked selection
     if (typeof exportData.files["README.md"] === "string") {
-      const companyName = exportData.manifest.company?.name ?? selectedCompany?.name ?? "Company";
+      const companyName = exportData.manifest.company?.name ?? selectedCompany?.name ?? "Article";
       const companyDescription = exportData.manifest.company?.description ?? null;
       filtered["README.md"] = generateReadmeFromSelection(
         exportData.manifest,

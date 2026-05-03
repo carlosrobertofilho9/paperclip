@@ -4,6 +4,11 @@ export const queryKeys = {
     detail: (id: string) => ["companies", id] as const,
     stats: ["companies", "stats"] as const,
   },
+  researchProjects: {
+    all: ["research-projects"] as const,
+    detail: (id: string) => ["research-projects", id] as const,
+    stats: ["research-projects", "stats"] as const,
+  },
   companySkills: {
     list: (companyId: string) => ["company-skills", companyId] as const,
     detail: (companyId: string, skillId: string) => ["company-skills", companyId, skillId] as const,
@@ -63,6 +68,15 @@ export const queryKeys = {
     activeRun: (issueId: string) => ["issues", "active-run", issueId] as const,
     workProducts: (issueId: string) => ["issues", "work-products", issueId] as const,
   },
+  tasks: {
+    list: (companyId: string) => ["tasks", companyId] as const,
+    search: (companyId: string, q: string, projectId?: string, limit?: number) =>
+      ["tasks", companyId, "search", q, projectId ?? "__all-projects__", limit ?? "__no-limit__"] as const,
+    detail: (id: string) => ["tasks", "detail", id] as const,
+    comments: (taskId: string) => ["tasks", "comments", taskId] as const,
+    documents: (taskId: string) => ["tasks", "documents", taskId] as const,
+    document: (taskId: string, key: string) => ["tasks", "document", taskId, key] as const,
+  },
   routines: {
     list: (companyId: string, filters?: { projectId?: string | null }) =>
       ["routines", companyId, filters?.projectId ?? "__all-projects__"] as const,
@@ -89,6 +103,14 @@ export const queryKeys = {
   goals: {
     list: (companyId: string) => ["goals", companyId] as const,
     detail: (id: string) => ["goals", "detail", id] as const,
+  },
+  scientificObjectives: {
+    list: (companyId: string) => ["scientific-objectives", companyId] as const,
+    detail: (id: string) => ["scientific-objectives", "detail", id] as const,
+  },
+  researchMilestones: {
+    list: (companyId: string) => ["research-milestones", companyId] as const,
+    detail: (id: string) => ["research-milestones", "detail", id] as const,
   },
   budgets: {
     overview: (companyId: string) => ["budgets", "overview", companyId] as const,

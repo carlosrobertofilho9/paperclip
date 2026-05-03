@@ -135,7 +135,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={addCompany} className="gap-2 py-2 text-muted-foreground">
           <Plus className="size-4" />
-          <span>Add company...</span>
+          <span>Add article...</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -149,7 +149,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
         <DropdownMenuItem asChild>
           <Link to="/company/settings" onClick={closeNavigationChrome}>
             <Settings className="size-4" />
-            <span>Company settings</span>
+            <span>Article settings</span>
           </Link>
         </DropdownMenuItem>
         {session?.session ? (

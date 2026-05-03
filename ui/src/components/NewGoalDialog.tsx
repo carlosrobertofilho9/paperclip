@@ -27,7 +27,7 @@ import { MarkdownEditor, type MarkdownEditorRef } from "./MarkdownEditor";
 import { StatusBadge } from "./StatusBadge";
 
 const levelLabels: Record<string, string> = {
-  company: "Company",
+  company: "Article",
   team: "Team",
   agent: "Agent",
   task: "Task",

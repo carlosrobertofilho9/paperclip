@@ -1,3 +1,4 @@
+export { researchProjects } from "./research_projects.js";
 export { companies } from "./companies.js";
 export { companyLogos } from "./company_logos.js";
 export { authUsers, authSessions, authAccounts, authVerifications } from "./auth.js";
@@ -28,6 +29,9 @@ export { workspaceOperations } from "./workspace_operations.js";
 export { workspaceRuntimeServices } from "./workspace_runtime_services.js";
 export { projectGoals } from "./project_goals.js";
 export { goals } from "./goals.js";
+export { scientificObjectives } from "./scientific_objectives.js";
+export { researchMilestones } from "./research_milestones.js";
+export { tasks } from "./tasks.js";
 export { issues } from "./issues.js";
 export { issueReferenceMentions } from "./issue_reference_mentions.js";
 export { issueRelations } from "./issue_relations.js";
@@ -71,3 +75,7 @@ export { pluginDatabaseNamespaces, pluginMigrations } from "./plugin_database.js
 export { pluginJobs, pluginJobRuns } from "./plugin_jobs.js";
 export { pluginWebhookDeliveries } from "./plugin_webhooks.js";
 export { pluginLogs } from "./plugin_logs.js";
+export { studies } from "./studies.js";
+export { prismaFlow } from "./prisma_flow.js";
+export { references } from "./references.js";
+export { studyExtractions } from "./study_extractions.js";
